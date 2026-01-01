@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edge Extension Strategy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #D32F2F;
+            --dark-bg: #1a1a1a;
+            --light-grey: #f5f5f5;
+            --mid-grey: #666;
+            --accent-orange: #FF6B35;
+            --accent-blue: #4A90E2;
+            --sophisticated-green: #1E3A2E;
+            --cream-white: #F5F5F0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background: var(--cream-white);
+            color: var(--dark-bg);
+            overflow: hidden;
+        }
+
+        .deck {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: repeat(12, 1fr);
+            gap: 2rem;
+            padding: 4rem;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        .slide-number {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.875rem;
+            color: var(--mid-grey);
+            font-weight: 500;
+        }
+
+        .red-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 8px;
+            height: 100%;
+            background: var(--primary-red);
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            grid-column: 2 / 11;
+            grid-row: 2 / 4;
+            align-self: end;
+        }
+
+        .highlight {
+            color: var(--primary-red);
+        }
+
+        .content-block {
+            grid-column: 2 / 11;
+            grid-row: 5 / 11;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .bullet-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .bullet {
+            display: grid;
+            grid-template-columns: 4px 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .bullet-marker {
+            width: 4px;
+            height: 4px;
+            background: var(--primary-red);
+            margin-top: 0.7rem;
+        }
+
+        .bullet-text {
+            font-size: 1.25rem;
+            font-weight: 400;
+            line-height: 1.6;
+            color: var(--dark-bg);
+        }
+
+        .key-line {
+            font-size: 1.5rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: var(--dark-bg);
+            padding: 2rem;
+            background: white;
+            border-left: 4px solid var(--primary-red);
+            margin-top: 1rem;
+        }
+
+        .diagram {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .diagram-node {
+            background: white;
+            padding: 1.5rem;
+            border-left: 4px solid var(--mid-grey);
+            transition: all 0.3s ease;
+        }
+
+        .diagram-node.primary {
+            border-left-color: var(--primary-red);
+            border-left-width: 6px;
+        }
+
+        .diagram-node h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .diagram-node p {
+            font-size: 0.9375rem;
+            color: var(--mid-grey);
+            line-height: 1.5;
+        }
+
+        .xyz-framework {
+            display: grid;
+            grid-template-columns: 60px 1fr;
+            gap: 1rem;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .xyz-framework:last-child {
+            border-bottom: none;
+        }
+
+        .step-number {
+            font-family: 'DM Mono', monospace;
+            font-size: 2rem;
+            font-weight: 500;
+            color: var(--primary-red);
+        }
+
+        .step-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .step-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--dark-bg);
+        }
+
+        .step-description {
+            font-size: 0.9375rem;
+            color: var(--mid-grey);
+            line-height: 1.6;
+        }
+
+        .credentials {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .credential-item {
+            background: white;
+            padding: 1.25rem;
+            border-left: 3px solid var(--mid-grey);
+        }
+
+        .credential-item strong {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--primary-red);
+            margin-bottom: 0.5rem;
+        }
+
+        .closing-statement {
+            grid-column: 2 / 11;
+            grid-row: 11 / 12;
+            font-size: 1.125rem;
+            font-style: italic;
+            color: var(--mid-grey);
+            align-self: center;
+        }
+
+        .opening-quote {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6rem;
+        }
+
+        .opening-quote-text {
+            font-size: 2.25rem;
+            line-height: 1.6;
+            font-style: italic;
+            font-weight: 300;
+            color: var(--cream-white);
+            max-width: 1000px;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--mid-grey);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide.active .content-block > * {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .slide.active .content-block > *:nth-child(1) { animation-delay: 0.1s; }
+        .slide.active .content-block > *:nth-child(2) { animation-delay: 0.2s; }
+        .slide.active .content-block > *:nth-child(3) { animation-delay: 0.3s; }
+        .slide.active .content-block > *:nth-child(4) { animation-delay: 0.4s; }
+        .slide.active .content-block > *:nth-child(5) { animation-delay: 0.5s; }
+        .slide.active .content-block > *:nth-child(6) { animation-delay: 0.6s; }
+
+        @media (max-width: 1024px) {
+            h1 { font-size: 2.5rem; }
+            .bullet-text { font-size: 1rem; }
+            .key-line { font-size: 1.125rem; }
+        }
+
+        @media (max-width: 768px) and (orientation: portrait) {
+            .slide {
+                padding: 2rem 1.5rem;
+                gap: 1rem;
+            }
+
+            .slide-number {
+                top: 1rem;
+                right: 1rem;
+                font-size: 0.75rem;
+            }
+
+            .red-bar {
+                width: 4px;
+            }
+
+            h1 {
+                font-size: 2rem;
+                grid-column: 1 / -1;
+                grid-row: 2 / 4;
+                margin-top: 1rem;
+            }
+
+            .highlight {
+                display: block;
+            }
+
+            .content-block {
+                grid-column: 1 / -1;
+                grid-row: 4 / -1;
+            }
+
+            .opening-quote {
+                padding: 2rem 1.5rem;
+            }
+
+            .opening-quote-text {
+                font-size: 1.25rem;
+                line-height: 1.5;
+            }
+
+            .diagram {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .diagram-node {
+                min-width: unset;
+                width: 100%;
+            }
+
+            .diagram-node h3 {
+                font-size: 1.25rem;
+            }
+
+            .diagram-node p {
+                font-size: 0.9rem;
+            }
+
+            .bullet-text {
+                font-size: 0.95rem;
+            }
+
+            .key-line {
+                font-size: 1rem;
+                margin-top: 1rem;
+            }
+
+            .xyz-framework {
+                padding: 1rem;
+            }
+
+            .step-number {
+                font-size: 1.5rem;
+                min-width: 50px;
+            }
+
+            .step-title {
+                font-size: 1rem;
+            }
+
+            .step-description {
+                font-size: 0.85rem;
+            }
+
+            .credentials {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .credential-item {
+                font-size: 0.9rem;
+            }
+
+            .closing-statement {
+                font-size: 0.9rem;
+                margin-top: 1.5rem;
+            }
+
+            .controls {
+                bottom: 1rem;
+                right: 1rem;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="deck">
+        <!-- Slide 0: Opening Quote -->
+        <div class="slide active opening-quote" data-slide="0" style="background: var(--sophisticated-green);">
+            <div class="slide-number" style="color: rgba(245,245,245,0.3);">00 / 08</div>
+            <div class="opening-quote-text">
+                "I want to be clear up front — the latency profile you've achieved is genuinely strong. Well positioned on the latency spectrum that is where True AI will be raised, closer to the buyers that want this. That's not trivial.<br><br>That's commercially correct."
+            </div>
+        </div>
+
+        <!-- Slide 1: Recognition -->
+        <div class="slide" data-slide="1">
+            <div class="red-bar"></div>
+            <div class="slide-number">01 / 08</div>
+            <h1>You've Already Built<br>a <span class="highlight">Carrier-Grade Edge</span></h1>
+            <div class="content-block">
+                <div class="bullet-group">
+                    <div class="bullet">
+                        <div class="bullet-marker"></div>
+                        <div class="bullet-text">Micro-hubs behind-the-meter</div>
+                    </div>
+                    <div class="bullet">
+                        <div class="bullet-marker"></div>
+                        <div class="bullet-text">Hydro-backed, stable energy input</div>
+                    </div>
+                    <div class="bullet">
+                        <div class="bullet-marker"></div>
+                        <div class="bullet-text">In-country data residency as a product layer</div>
+                    </div>
+                    <div class="bullet">
+                        <div class="bullet-marker"></div>
+                        <div class="bullet-text">Inference-first architecture (not training)</div>
+                    </div>
+                </div>
+                <div class="key-line">
+                    "What you've built isn't 'cloud-adjacent.' It's the only infrastructure in Canada that can deliver sub-10ms AI inference at scale—carrier-operated, metro-distributed, and physically impossible for hyperscalers to replicate."
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Ecosystem Fit -->
+        <div class="slide" data-slide="2">
+            <div class="red-bar"></div>
+            <div class="slide-number">02 / 08</div>
+            <h1>You're Building the First<br><span class="highlight">Physics-Constrained Token Economy</span></h1>
+            <div class="content-block">
+                <div class="diagram">
+                    <div class="diagram-node">
+                        <h3>Hyperscalers</h3>
+                        <p>50-100ms latency—physically impossible to serve sub-10ms workloads from centralized clouds</p>
+                    </div>
+                    <div class="diagram-node primary">
+                        <h3>Bell Metro-Edge</h3>
+                        <p>Sub-10ms inference—only achievable through local presence. Physics creates the moat.</p>
+                    </div>
+                    <div class="diagram-node">
+                        <h3>Premium Multipliers</h3>
+                        <p>ESG + sovereignty + compliance stack on top of latency—enterprises pay 5-10x</p>
+                    </div>
+                </div>
+                <div class="key-line">
+                    "Latency is the bedrock. Speed of light in fiber = ~200km/ms. Toronto to AWS Northern Virginia = 50ms minimum. Sub-10ms is physically impossible from hyperscalers. You own the only infrastructure that can deliver it."
+                </div>
+                <div class="bullet-text" style="margin-top: 1.5rem; font-weight: 600; color: var(--primary-red);">
+                    ESG certification and sovereignty aren't the business case—they're premium multipliers on top of a latency monopoly that physics guarantees.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Extension -->
+        <div class="slide" data-slide="3">
+            <div class="red-bar"></div>
+            <div class="slide-number">03 / 08</div>
+            <h1>The Next Logical Step:<br><span class="highlight">Activating Latency Where It Exists</span></h1>
+            <div class="content-block">
+                <div class="bullet-group">
+                    <div class="bullet">
+                        <div class="bullet-marker"></div>
+                        <div class="bullet-text"><strong>Five-Nines Uptime:</strong> Broadcast rack rooms = 99.999% SLA, same as carrier metro-edge nodes</div>
+                    </div>
+                    <div class="bullet">
+                        <div class="bullet-marker"></div>
+                        <div class="bullet-text"><strong>Behind-the-Meter Power:</strong> Both connect directly to stable hydro/grid—no retail electricity volatility</div>
+                    </div>
+                    <div class="bullet">
+                        <div class="bullet-marker"></div>
+                        <div class="bullet-text"><strong>Regulatory Compliance:</strong> CRTC oversight, change control procedures, documented failover protocols</div>
+                    </div>
+                    <div class="bullet">
+                        <div class="bullet-marker"></div>
+                        <div class="bullet-text"><strong>Physical Security:</strong> Controlled access, 24/7 monitoring, audit trails—identical security posture</div>
+                    </div>
+                    <div class="bullet">
+                        <div class="bullet-marker"></div>
+                        <div class="bullet-text"><strong>Metro Distribution:</strong> Both positioned in downtown cores—seconds from enterprise districts, financial centers, hospitals</div>
+                    </div>
+                </div>
+                <div class="key-line">
+                    "A broadcast rack room and a Bell hydro-station edge node are operationally identical. Same uptime. Same regulation. Same latency envelope. Bell already knows how to certify this infrastructure—you've been doing it for decades."
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: XYZ -->
+        <div class="slide" data-slide="4">
+            <div class="red-bar"></div>
+            <div class="slide-number">04 / 08</div>
+            <h1>How I Extend This<br><span class="highlight">Into New Revenue</span></h1>
+            <div class="content-block">
+                <div class="xyz-framework">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Map the Latency Envelope</div>
+                        <div class="step-description">Identify broadcast facilities delivering sub-10ms to enterprise districts—financial cores, hospitals, government centers</div>
+                    </div>
+                </div>
+                <div class="xyz-framework">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Bell Certifies Latency + Compliance</div>
+                        <div class="step-description">SLA-backed sub-10ms guarantees as baseline, ESG + sovereignty certification as premium multipliers (3-10x pricing)</div>
+                    </div>
+                </div>
+                <div class="xyz-framework">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Route Latency-Sensitive Workloads</div>
+                        <div class="step-description">Real-time fraud detection, surgical robotics inference, HFT model execution—applications where 50ms = failure</div>
+                    </div>
+                </div>
+                <div class="xyz-framework">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Tiered Revenue: Physics → Premium</div>
+                        <div class="step-description">Base: $0.02/inference (latency alone). ESG-certified: +2x. Sovereignty-guaranteed: +3x. Combined: 5-10x commodity rate.</div>
+                    </div>
+                </div>
+                <div class="key-line">
+                    "Latency is the moat. ESG and sovereignty are the margin multipliers. Bell certifies both. I design the routing logic and pricing tiers that capture maximum value."
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Domain Depth -->
+        <div class="slide" data-slide="5">
+            <div class="red-bar"></div>
+            <div class="slide-number">05 / 08</div>
+            <h1>I've Done<br><span class="highlight">The Math</span></h1>
+            <div class="content-block">
+                <div class="xyz-framework">
+                    <div class="step-number" style="color: var(--primary-red);">📡</div>
+                    <div class="step-content">
+                        <div class="step-title">Infrastructure Unlock: 75,000 Hidden Nodes</div>
+                        <div class="step-description">Mapped global broadcast GPU infrastructure—Vizrt/Ross servers sitting idle 18hrs/day—creating instant geographic coverage without new CapEx deployment</div>
+                    </div>
+                </div>
+                <div class="xyz-framework">
+                    <div class="step-number" style="color: var(--primary-red);">$</div>
+                    <div class="step-content">
+                        <div class="step-title">Unit Economics: Node-Level Revenue Models</div>
+                        <div class="step-description">Built Monte Carlo simulations proving 7-figure annual revenue per premium node at conservative 20-40% utilization—validated against declining inference prices and elastic demand curves</div>
+                    </div>
+                </div>
+                <div class="xyz-framework">
+                    <div class="step-number" style="color: var(--primary-red);">⚡</div>
+                    <div class="step-content">
+                        <div class="step-title">Latency Physics: The Fundamental Constraint</div>
+                        <div class="step-description">Speed of light in fiber = ~200km/ms. Modeled sub-10ms inference zones, proving hyperscalers structurally cannot serve them from centralized clouds—creating natural metro-edge monopolies</div>
+                    </div>
+                </div>
+                <div class="xyz-framework">
+                    <div class="step-number" style="color: var(--primary-red);">⚖</div>
+                    <div class="step-content">
+                        <div class="step-title">Governance: The 512 Constitutional Framework</div>
+                        <div class="step-description">Developed minimal execution-time legitimacy system for distributed AI—red-teamed from 20% to 65% viability when paired with Evidence-Sidecar cryptographic compliance architecture</div>
+                    </div>
+                </div>
+                <div class="key-line" style="margin-top: 1.5rem;">
+                    Latency physics. Revenue models. Governance frameworks. This isn't theory—it's engineered infrastructure built on the one constraint hyperscalers cannot overcome: the speed of light.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Why You -->
+        <div class="slide" data-slide="6">
+            <div class="red-bar"></div>
+            <div class="slide-number">06 / 08</div>
+            <h1>Why This Is<br><span class="highlight">Where I Fit</span></h1>
+            <div class="content-block">
+                <div class="credentials">
+                    <div class="credential-item">
+                        <strong>LATENCY ECONOMICS</strong>
+                        Built models proving sub-10ms inference is physically impossible from hyperscalers—physics creates pricing power
+                    </div>
+                    <div class="credential-item">
+                        <strong>BROADCAST INFRASTRUCTURE</strong>
+                        15+ years selling into broadcast—the only industry with metro-distributed GPU infrastructure already in place
+                    </div>
+                    <div class="credential-item">
+                        <strong>PREMIUM TOKEN DESIGN</strong>
+                        Designed tiered pricing: latency as base, ESG + sovereignty as 3-10x multipliers on regulated workloads
+                    </div>
+                    <div class="credential-item">
+                        <strong>CARRIER FLUENCY</strong>
+                        Speak five-nines operations—change control, SLA enforcement, failure domains
+                    </div>
+                </div>
+                <div class="key-line">
+                    "I know where the sub-10ms zones are. I know which enterprises will pay 5-10x because physics gives them no alternative. I'd like to help you certify that latency, tier the pricing, and capture the margin."
+                </div>
+            </div>
+            <div class="closing-statement">
+                [ silence after this is a feature ]
+            </div>
+        </div>
+
+        <!-- Slide 7: End -->
+        <div class="slide" data-slide="7" style="background: var(--primary-red); padding: 0;">
+            <div class="slide-number" style="color: rgba(255,255,255,0.3);">07 / 08</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        ← → to navigate
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                showSlide(currentSlide + 1);
+            } else if (e.key === 'ArrowLeft') {
+                showSlide(currentSlide - 1);
+            }
+        });
+
+        // Click navigation
+        document.addEventListener('click', (e) => {
+            const width = window.innerWidth;
+            if (e.clientX > width / 2) {
+                showSlide(currentSlide + 1);
+            } else {
+                showSlide(currentSlide - 1);
+            }
+        });
+    </script>
+</body>
+</html>
