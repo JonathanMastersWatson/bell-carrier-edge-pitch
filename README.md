@@ -1,2 +1,2 @@
-# bell-carrier-edge-pitch
-Revenue Opportunity for Bell
+# Bell-Edge-Opportunities-in-Broadcast
+Revenue Opportunity for Bell in broadcast rack spaces
